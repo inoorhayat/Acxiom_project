@@ -1,13 +1,19 @@
-# Optional Render blueprint for the API. Create it with: Render > New > Blueprint
+# Render Blueprint: creates BOTH the API (Web Service) and the frontend (Static Site).
+# Render > New > Blueprint > select this repo. You will be asked for the values marked sync: false.
+
 services:
+  # ---------- Backend API ----------
   - type: web
     name: acxiomcrm-api
     runtime: node
+    plan: free
     rootDir: server
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: NODE_VERSION
         value: 20
       - key: MONGODB_URI
@@ -22,3 +28,21 @@ services:
         value: 5
       - key: LOCKOUT_MINUTES
         value: 15
+
+  # ---------- Frontend (React / Vite) ----------
+  - type: web
+    name: acxiomcrm-web
+    runtime: static
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: NODE_VERSION
+        value: 20
